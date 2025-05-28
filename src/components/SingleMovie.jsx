@@ -8,10 +8,8 @@ function SingleMovie({movie}) {
     return (
         <li>
             <img src={Poster} alt={Title} />
-            <div>
-                <h3>{Title}</h3>
-                <ParagraphContainer emoji="📆" content={`${Year}`} />
-            </div>
+            <h3>{Title}</h3>
+            <ParagraphContainer emoji="📆" content={`${Year}`} />
         </li>
     )
 }

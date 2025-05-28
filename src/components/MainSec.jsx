@@ -1,12 +1,9 @@
 
-import Movies from './Movies';
-import WatchedMovies from './WatchedMovies';
 
-function MainSec({resultMovies ,watchedMovies}) {
+function MainSec({children}) {
     return (
         <div className="main">
-            <Movies resultMovies={resultMovies} />
-            <WatchedMovies watchedMovies={watchedMovies} />
+            {children}
         </div>
     )
 }

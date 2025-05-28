@@ -3,6 +3,13 @@ import { useState } from 'react';
 import './App.css'
 import MainSec from './components/MainSec';
 import Navbar from './components/Navbar';
+import Movies from './components/Movies';
+import WatchedMovies from './components/WatchedMovies';
+import ListBox from './components/ListBox';
+import Button from './components/Button';
+import WatchedSummary from './components/WatchedSummary';
+import Search from './components/Search';
+import StarRating from './components/StarRating';
 
 const tempMovieData = [
   {
@@ -51,15 +58,67 @@ const tempWatchedData = [
   },
 ];
 
+function Test()
+{
+  const [movieRating,setMovieRating]  = useState(0); 
+
+  return (
+    <>
+      <StarRating color ="blue" setStateFun={setMovieRating} />
+      <p>Rating is {movieRating}</p>
+    </>
+  );
+  
+}
 
 function App() {
   const [resultMovies , setResultMovies] = useState(tempMovieData);
   const [watchedMovies , setWatchedMovies] = useState(tempWatchedData);
+  const[query,setQuery] = useState("");
+  
+
+  
+
+    function Logo()
+    {
+        return (
+            <div className="logo">
+                <span role="logo">🍿</span>
+                <h1>usePopcorn</h1>
+            </div>
+        );
+    }
+
+    function Results({foundMoviesLength})
+    {
+        return(<h3 className="num-results">Found <strong>{foundMoviesLength}</strong> results</h3>);
+    }
+
+    const messages =['terrible','bad','ok','good','amazing'];
 
   return (
     <>
-      <Navbar foundMoviesLength={resultMovies.length}/>
-      <MainSec resultMovies={resultMovies } watchedMovies={watchedMovies} />
+    <Test/>
+    <StarRating maxRating = {5} color='green' size={30} className='test' defaultRating={3} messages={messages}/>
+    <StarRating maxRating = {10} />
+      <Navbar>
+        <Logo/>
+        <Search query={query} setQuery={setQuery}/>
+        <Results foundMoviesLength={resultMovies.length}/>
+      </Navbar>
+
+      <MainSec>
+        {/* {render found movies } */}
+        <ListBox>
+          <Movies resultMovies={tempMovieData}/>
+        </ListBox>
+
+        {/* {render watched movies } */}
+        <ListBox>
+          <WatchedSummary watchedMovies={watchedMovies}></WatchedSummary>
+          <WatchedMovies  watchedMovies={watchedMovies} />
+        </ListBox>
+      </MainSec>
     </>
   )
 }
