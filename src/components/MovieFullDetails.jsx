@@ -3,6 +3,7 @@ import { key } from "../App";
 import defaultPoster from "../assets/defaultMovie.webp";
 import StarRating from "./StarRating";
 import Button from "./Button";
+import { func } from "prop-types";
 
 // {
 //     "Title": "Monsters, Inc.",
@@ -96,6 +97,26 @@ function MovieFullDetails({
     [selectedMovieID]
   );
 
+  //handle esc button add eventlistener to document
+  useEffect(function(){
+    function callback(e){
+      if(e.code==='Escape')
+      {
+        onCloseDetails();
+        console.log("closing");
+      }
+    }
+    document.addEventListener('keyup',callback ) ;
+
+    //clean up
+    return function()
+    {
+      document.removeEventListener('keyup',callback);
+    }
+  },[onCloseDetails]);
+
+  
+
   const {
     Title: title,
     Year: year,
@@ -120,6 +141,18 @@ function MovieFullDetails({
       runtime: movie.Runtime === "N/A" ? 0 : movie.Runtime,
     });
   }
+
+  useEffect(function()
+  {
+    if(!title) return ;
+    document.title = `Movie | ${title}` ;
+    return function()
+    {
+      document.title = 'UsePopcorn';
+    }
+  },[title]);
+
+  
 
   return isLoading ? (
     <p className="loader">Laoding...</p>
