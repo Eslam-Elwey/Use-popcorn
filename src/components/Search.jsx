@@ -1,18 +1,42 @@
+import { useEffect } from "react";
 
+function Search({ query, setQuery, inputElem }) {
+  function handleEnterButtonFocus(e) {
 
-function Search({query, setQuery})
-{
-    function handleChange(e)
+    if(document.activeElement===inputElem.current)
     {
-        setQuery(()=>String(e.target.value));
+        return ;
     }
 
-    return (
-        <input type="text" 
-        className="search" placeholder="Search movies..." value={query}
-        onChange={handleChange}/>
-    );
+    if(e.code==='Enter')
+    {
+        inputElem.current.focus();
+        setQuery(()=>"");
+    }
+    
+  }
 
+  useEffect(function () {
+    document.addEventListener("keyup", handleEnterButtonFocus);
+    return function () {
+      document.removeEventListener("keyup", handleEnterButtonFocus);
+    };
+  });
+
+  function handleChange(e) {
+    setQuery(() => String(e.target.value));
+  }
+
+  return (
+    <input
+      type="text"
+      ref={inputElem}
+      className="search"
+      placeholder="Search movies..."
+      value={query}
+      onChange={handleChange}
+    />
+  );
 }
 
-export default Search
+export default Search;
