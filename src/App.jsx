@@ -82,12 +82,14 @@ function ErrorMessage({ message }) {
 
 
 
+
+
 function App() {
   const [resultMovies, setResultMovies] = useState([]);
   const [watchedMovies, setWatchedMovies] = useState([]);
   const [isLoading, setIsloading] = useState(false);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("inception");
+  const [query, setQuery] = useState("");
   const [selectedMovieID, setSelectedMovieID] = useState(null);
 
   useEffect(()=>console.log(selectedMovieID),[selectedMovieID]);
@@ -98,6 +100,8 @@ function App() {
     handleCloseDetails();
   }
 
+  
+
 
   function removeMovieFromWatchlist(movieID)
   {
@@ -105,12 +109,15 @@ function App() {
   }
 
   useEffect(function () {
+
+    const controller = new AbortController() ;
+
     setIsloading(() => true);
     setError("");
     async function fetchMovies() {
       try {
         const response = await fetch(
-          `https://www.omdbapi.com/?apikey=${key}&s=${query}`
+          `https://www.omdbapi.com/?apikey=${key}&s=${query}` ,{signal : controller.signal}
         );
 
         if (!response.ok) {
@@ -122,15 +129,20 @@ function App() {
           throw new Error("No movies found");
         }
         setResultMovies(data.Search);
+        setError(()=>"");
         
       } catch (err) {
-        console.log(err.message);
+        
         if(err.message==="Failed to fetch")
         {
           console.err(err);
+          console.log(err.message);
           err.message = "Something went wrong in fetching movies" ;
         }
-        setError(() => err.message);
+        if(err.name!='AbortError')
+        {
+          setError(() => err.message);
+        }
       } finally {
         setIsloading(() => false);
       }
@@ -143,7 +155,12 @@ function App() {
       setIsloading(false);
       return ;
     }
+    handleCloseDetails();
     fetchMovies();
+    return function()
+    {
+      controller.abort() ;
+    }
   }, [query]);
 
   function handleCloseDetails()
