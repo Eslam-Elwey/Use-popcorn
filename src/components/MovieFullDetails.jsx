@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { key } from "../App";
 import defaultPoster from "../assets/defaultMovie.webp";
 import StarRating from "./StarRating";
 import Button from "./Button";
-import { func } from "prop-types";
 
 // {
 //     "Title": "Monsters, Inc.",
@@ -50,24 +49,52 @@ function MovieFullDetails({
   selectedMovieID,
   onCloseDetails,
   onAddMovieToList,
-  watchedMovies
+  watchedMovies,
 }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState(null);
-  const [isListed,setIsListed] = useState(false) ;
-  const [watchedMovieRating,setWatchedMovieRating] = useState(false) ;
+  const [isListed, setIsListed] = useState(false);
+  const [watchedMovieRating, setWatchedMovieRating] = useState(false);
 
+  const ratingCounter = useRef(0);
 
-  useEffect(function()
-  {
-    const index = watchedMovies.findIndex((movie)=>movie.imdbID===selectedMovieID);
-    index===-1?setIsListed(()=>false):setIsListed(()=>true);
-    if(index!=-1)
-    {
-      setWatchedMovieRating(()=>watchedMovies[index] . userRating) ;
-    }
-  },[selectedMovieID,watchedMovies]);
+  const {
+    Title: title,
+    Released: releasedDate,
+    Runtime: runTime,
+    Genre: genre,
+    Actors: actors,
+    Plot: plot,
+    Director: director,
+    Poster: poster,
+    imdbRating,
+    imdbID,
+  } = movie;
+
+  useEffect(
+    function () {
+      if (userRating) {
+        console.log("new desicion");
+        console.log(ratingCounter.current);
+        ratingCounter.current = ratingCounter.current + 1;
+      }
+    },
+    [userRating]
+  );
+
+  useEffect(
+    function () {
+      const index = watchedMovies.findIndex(
+        (movie) => movie.imdbID === selectedMovieID
+      );
+      index === -1 ? setIsListed(() => false) : setIsListed(() => true);
+      if (index != -1) {
+        setWatchedMovieRating(() => watchedMovies[index].userRating);
+      }
+    },
+    [selectedMovieID, watchedMovies]
+  );
 
   useEffect(
     function () {
@@ -98,61 +125,43 @@ function MovieFullDetails({
   );
 
   //handle esc button add eventlistener to document
-  useEffect(function(){
-    function callback(e){
-      if(e.code==='Escape')
-      {
-        onCloseDetails();
-        console.log("closing");
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === "Escape") {
+          onCloseDetails();
+          console.log("closing");
+        }
       }
-    }
-    document.addEventListener('keyup',callback ) ;
+      document.addEventListener("keyup", callback);
 
-    //clean up
-    return function()
-    {
-      document.removeEventListener('keyup',callback);
-    }
-  },[onCloseDetails]);
+      //clean up
+      return function () {
+        document.removeEventListener("keyup", callback);
+      };
+    },
+    [onCloseDetails]
+  );
 
-  
-
-  const {
-    Title: title,
-    Year: year,
-    Released: releasedDate,
-    Runtime: runTime,
-    Genre: genre,
-    Actors: actors,
-    Plot: plot,
-    Director: director,
-    Poster: poster,
-    Writer: writer,
-    imdbRating,
-    Language: lang,
-    Country: country,
-    imdbID,
-  } = movie;
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
+      return function () {
+        document.title = "UsePopcorn";
+      };
+    },
+    [title]
+  );
 
   function handleAddMovie() {
     onAddMovieToList({
       ...movie,
       userRating: userRating === null ? 0 : userRating,
       runtime: movie.Runtime === "N/A" ? 0 : movie.Runtime,
+      ratingCounterDesicison: ratingCounter.current,
     });
   }
-
-  useEffect(function()
-  {
-    if(!title) return ;
-    document.title = `Movie | ${title}` ;
-    return function()
-    {
-      document.title = 'UsePopcorn';
-    }
-  },[title]);
-
-  
 
   return isLoading ? (
     <p className="loader">Laoding...</p>
@@ -184,22 +193,28 @@ function MovieFullDetails({
         </header>
 
         <section>
-            {
-                !isListed?<>
-                <div className="rating">
-                  <StarRating
+          {!isListed ? (
+            <>
+              <div className="rating">
+                <StarRating
                   setStateFun={setUserRating}
                   maxRating={10}
                   size={20}
                   key={imdbID}
                 />
-                </div>
-                {userRating>0&&<Button onClickHandler={handleAddMovie} classVal="btn-add">
-                Add to list
-            </Button>}</>:<p className="rating">You rated this movie {watchedMovieRating} 🌟</p>
-            }
-          
-        
+              </div>
+              {userRating > 0 && (
+                <Button onClickHandler={handleAddMovie} classVal="btn-add">
+                  Add to list
+                </Button>
+              )}
+            </>
+          ) : (
+            <p className="rating">
+              You rated this movie {watchedMovieRating} 🌟
+            </p>
+          )}
+
           <p>
             <em>{plot}</em>
           </p>
