@@ -9,7 +9,7 @@ function WatchedSummary({watchedMovies})
 
     const avergeIMDBRating = average(watchedMovies.map((movie)=>movie.imdbRating)) ;
     const avergeUserRating = average(watchedMovies.map((movie)=>parseInt(movie.userRating))) ;
-    const avergeWatchedTime = average(watchedMovies.map((movie)=>parseInt(movie.runtime)===NaN?0:parseInt(movie.runtime))) ;
+    const avergeWatchedTime = average(watchedMovies.map((movie)=>isNaN(parseInt(movie.runtime))?0:parseInt(movie.runtime))) ;
 
     return(
         <div className='summary'>
