@@ -1,11 +1,11 @@
 import SingleMovie from "./SingleMovie"
 
 
-function Movies({resultMovies}) {
+function Movies({resultMovies,setSelectedMovieID,selectedMovieID}) {
     return (
             <>
                 {<ul className="list list-movies">
-                    {resultMovies.map((movie)=>(<SingleMovie key={crypto.randomUUID()} movie={movie}/>))}
+                    {resultMovies.map((movie)=>(<SingleMovie selectedMovieID={selectedMovieID} setSelectedMovieID={setSelectedMovieID} key={crypto.randomUUID()} movie={movie}/>))}
                 </ul>}
             </>
     )
