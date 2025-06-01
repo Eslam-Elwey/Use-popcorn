@@ -10,6 +10,8 @@ import WatchedSummary from "./components/WatchedSummary";
 import Search from "./components/Search";
 import StarRating from "./components/StarRating";
 import MovieFullDetails from "./components/MovieFullDetails";
+import { useMovies } from "./custom_hooks/useMovies";
+import { useLocalStorageState } from "./custom_hooks/useLocalStorageState";
 
 export const key = "d8126ba3";
 
@@ -72,111 +74,41 @@ function Test() {
 }
 
 function ErrorMessage({ message }) {
-  return(
-  <p className="error">
-    <span>⛔</span>
-    {message}
-  </p>
-  )
+  return (
+    <p className="error">
+      <span>⛔</span>
+      {message}
+    </p>
+  );
 }
 
-
-
-
-
 function App() {
-  const [resultMovies, setResultMovies] = useState([]);
-  const [watchedMovies, setWatchedMovies] = useState(function(){
-    const retrivedMovies = localStorage.getItem('watchedMovies') ;
+  const [ watchedMovies, setWatchedMovies ] = useLocalStorageState([],"watchedMovies");
 
-
-    return JSON.parse(retrivedMovies)??[];
-  });
-  const [isLoading, setIsloading] = useState(false);
-  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedMovieID, setSelectedMovieID] = useState(null);
 
-  const inputElem = useRef(null) ;
+  const inputElem = useRef(null);
 
-
-  function handleAddwatchedMovie(movie)
-  {
-    setWatchedMovies(()=>[...watchedMovies,movie]);
+  function handleAddwatchedMovie(movie) {
+    setWatchedMovies(() => [...watchedMovies, movie]);
     handleCloseDetails();
   }
 
-  function handleCloseDetails()
-  {
-    setSelectedMovieID(()=>null);
+  function handleCloseDetails() {
+    setSelectedMovieID(() => null);
   }
 
-
-  function removeMovieFromWatchlist(movieID)
-  {
-    setWatchedMovies(()=>watchedMovies.filter((movie)=>movie.imdbID!=movieID));
+  function removeMovieFromWatchlist(movieID) {
+    setWatchedMovies(() =>
+      watchedMovies.filter((movie) => movie.imdbID != movieID)
+    );
   }
 
-  useEffect(function(){
-    localStorage.setItem('watchedMovies',JSON.stringify(watchedMovies));
-  },[watchedMovies]);
-
-  useEffect(function () {
-
-    const controller = new AbortController() ;
-
-    setIsloading(() => true);
-    setError("");
-    async function fetchMovies() {
-      try {
-        const response = await fetch(
-          `https://www.omdbapi.com/?apikey=${key}&s=${query}` ,{signal : controller.signal}
-        );
-
-        if (!response.ok) {
-          throw new Error("Something went wrong in fetching movies");
-        }
-        const data = await response.json();
-        console.log(data);
-        if (data.Response === "False") {
-          throw new Error("No movies found");
-        }
-        setResultMovies(data.Search);
-        setError(()=>"");
-        
-      } catch (err) {
-        
-        if(err.message==="Failed to fetch")
-        {
-          console.err(err);
-          console.log(err.message);
-          err.message = "Something went wrong in fetching movies" ;
-        }
-        if(err.name!='AbortError')
-        {
-          setError(() => err.message);
-        }
-      } finally {
-        setIsloading(() => false);
-      }
-    }
-
-    if(query.length<3)
-    {
-      setError(()=>"");
-      setResultMovies(()=>[]);
-      setIsloading(false);
-      return ;
-    }
-    handleCloseDetails();
-    fetchMovies();
-    return function()
-    {
-      controller.abort() ;
-    }
-  }, [query]);
-
-  
+  const { resultMovies, error, isLoading } = useMovies(
+    query,
+    handleCloseDetails
+  );
 
   function Logo() {
     return (
@@ -219,21 +151,34 @@ function App() {
         {/* {render found movies } */}
         <ListBox>
           {isLoading && <p className="loader">Laoding...</p>}
-          {!isLoading && !error && <Movies selectedMovieID={selectedMovieID}  resultMovies={resultMovies}  setSelectedMovieID={setSelectedMovieID}/>}
+          {!isLoading && !error && (
+            <Movies
+              selectedMovieID={selectedMovieID}
+              resultMovies={resultMovies}
+              setSelectedMovieID={setSelectedMovieID}
+            />
+          )}
           {error && <ErrorMessage message={error} />}
         </ListBox>
 
         {/* {render watched movies } */}
         <ListBox>
-          {
-            
-            selectedMovieID?<MovieFullDetails watchedMovies={watchedMovies} onAddMovieToList={handleAddwatchedMovie} onCloseDetails={handleCloseDetails} selectedMovieID={selectedMovieID} /> :
-            
+          {selectedMovieID ? (
+            <MovieFullDetails
+              watchedMovies={watchedMovies}
+              onAddMovieToList={handleAddwatchedMovie}
+              onCloseDetails={handleCloseDetails}
+              selectedMovieID={selectedMovieID}
+            />
+          ) : (
             <>
               <WatchedSummary watchedMovies={watchedMovies}></WatchedSummary>
-              <WatchedMovies onRemove={removeMovieFromWatchlist} watchedMovies={watchedMovies} />
+              <WatchedMovies
+                onRemove={removeMovieFromWatchlist}
+                watchedMovies={watchedMovies}
+              />
             </>
-          }
+          )}
         </ListBox>
       </MainSec>
     </>
